@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push, and Deploy Docker Image
 
 on:
   push:
@@ -24,3 +24,19 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to web server via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest
+            docker stop flask-hello || true
+            docker rm flask-hello || true
+            docker run -d --name flask-hello -p 5000:5000 ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest
