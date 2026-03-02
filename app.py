@@ -8,7 +8,7 @@ def hello_world():
 
 @app.route('/contact')
 def contact():
-    return "Contact us at support@example.com"
+    return "Contact us at email: support@example.com"
 
 if __name__ == "__main__":
     # host="0.0.0.0" makes it accessible on the machine's IP
