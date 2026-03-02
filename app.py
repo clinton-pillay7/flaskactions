@@ -1,13 +1,24 @@
+"""
+app.py
+This module contains the Flask application setup and routes.
+"""
+
 from flask import Flask
 
 app = Flask(__name__)
 
+
+
 @app.route("/")
 def hello_world():
+    """ Home Function """
     return "Hello earth!!!! - see what SSH did - with versioning this time"
+
+
 
 @app.route('/contact')
 def contact():
+    """ Contact function """
     return "Contact us at email: support@example.com"
 
 if __name__ == "__main__":
