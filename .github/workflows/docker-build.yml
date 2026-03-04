@@ -1,3 +1,56 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches: [ "main", "feature/*" ] # Run tests on these branches
+    tags:
+      - "v*"                         # Only tags trigger Build/Deploy
+
+jobs:
+  # --- NEW TEST JOB ---
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install flask pytest pylint
+
+      - name: Run Pylint
+        run: pylint app.py --fail-under=8.0 # Fails if score is < 8
+
+      - name: Run Pytest
+        run: pytest
+
+  # --- MODIFIED BUILD JOB ---
+  build:
+    runs-on: ubuntu-latest
+    needs: test                     # Won't build if tests fail!
+    if: startsWith(github.ref, 'refs/tags/v') # Only run for tags
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest,${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:${{ github.ref_name }}
+
   # --- DEPLOY JOB ---
   deploy:
     runs-on: ubuntu-latest
@@ -14,20 +67,3 @@
             docker stop flask-hello || true
             docker rm flask-hello || true
             docker run -d --name flask-hello -p 5000:5000 ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest
-
-      - name: Send deployment result email
-        if: always()   # ensures email is sent even if deploy fails
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.SMTP_USER }}
-          password: ${{ secrets.SMTP_PASS }}
-          subject: "Deployment Status: ${{ github.workflow }} - ${{ job.status }}"
-          to: team@example.com
-          from: ${{ secrets.SMTP_USER }}
-          body: |
-            Deployment job finished.
-            Status: ${{ job.status }}
-            Commit: ${{ github.sha }}
-            Ref: ${{ github.ref }}
