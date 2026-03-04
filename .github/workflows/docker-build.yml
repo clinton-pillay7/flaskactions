@@ -78,7 +78,7 @@ jobs:
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
           subject: "Deployment Status: ${{ github.workflow }} - ${{ job.status }}"
-          to: team@example.com
+          to: clinton.pillay@outlook.com
           from: ${{ secrets.SMTP_USER }}
           body: |
             Deployment job finished.
