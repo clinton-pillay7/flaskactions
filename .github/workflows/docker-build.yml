@@ -85,16 +85,18 @@ jobs:
             Commit: ${{ github.sha }}
             Ref: ${{ github.ref }}
 
-      - name: Update Jira on success
+      - name: Close Jira issue on success
         if: success()
         run: |
           curl -X POST \
             -H "Content-Type: application/json" \
             -u ${{ secrets.JIRA_USER }}:${{ secrets.JIRA_API_TOKEN }} \
             --data '{
-              "body": "✅ Deployment succeeded for issue JIRA-2 on EC2 VM. Commit: '${{ github.sha }}'"
+              "transition": {
+                "id": "31"
+              }
             }' \
-            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2/comment
+            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2/transitions
 
       - name: Update Jira on failure
         if: failure()
