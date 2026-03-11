@@ -12,7 +12,7 @@ app = Flask(__name__)
 @app.route("/")
 def hello_world():
     """ Home Function """
-    return "Hello earth!!!! - see what SSH did - with versioning this time and Jira intergration"
+    return "Hello earth!!!! - see what SSH did - with versioning this time and Jira intergration v3"
 
 
 

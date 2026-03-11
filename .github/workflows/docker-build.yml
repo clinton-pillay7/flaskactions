@@ -92,17 +92,9 @@ jobs:
             -H "Content-Type: application/json" \
             -u ${{ secrets.JIRA_USER }}:${{ secrets.JIRA_API_TOKEN }} \
             --data '{
-              "update": {
-                "comment": [
-                  {
-                    "add": {
-                      "body": "✅ Deployment succeeded for issue JIRA-2 on EC2 VM. Commit: '${{ github.sha }}'"
-                    }
-                  }
-                ]
-              }
+              "body": "✅ Deployment succeeded for issue JIRA-2 on EC2 VM. Commit: '${{ github.sha }}'"
             }' \
-            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2
+            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2/comment
 
       - name: Update Jira on failure
         if: failure()
@@ -111,14 +103,7 @@ jobs:
             -H "Content-Type: application/json" \
             -u ${{ secrets.JIRA_USER }}:${{ secrets.JIRA_API_TOKEN }} \
             --data '{
-              "update": {
-                "comment": [
-                  {
-                    "add": {
-                      "body": "❌ Deployment FAILED for issue JIRA-2. Commit: '${{ github.sha }}'"
-                    }
-                  }
-                ]
-              }
+              "body": "❌ Deployment FAILED for issue JIRA-2. Commit: '${{ github.sha }}'"
             }' \
-            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2
+            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2/comment
+
