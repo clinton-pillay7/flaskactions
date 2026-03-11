@@ -52,7 +52,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest,${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:${{ github.ref_name }}
 
-# --- DEPLOY JOB ---
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -70,7 +69,7 @@ jobs:
             docker run -d --name flask-hello -p 5000:5000 ${{ secrets.DOCKERHUB_USERNAME }}/flask-hello:latest
 
       - name: Send deployment result email
-        if: always()   # ensures email is sent even if deploy fails
+        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -85,3 +84,41 @@ jobs:
             Status: ${{ job.status }}
             Commit: ${{ github.sha }}
             Ref: ${{ github.ref }}
+
+      - name: Update Jira on success
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -u ${{ secrets.JIRA_USER }}:${{ secrets.JIRA_API_TOKEN }} \
+            --data '{
+              "update": {
+                "comment": [
+                  {
+                    "add": {
+                      "body": "✅ Deployment succeeded for issue JIRA-2 on EC2 VM. Commit: '${{ github.sha }}'"
+                    }
+                  }
+                ]
+              }
+            }' \
+            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2
+
+      - name: Update Jira on failure
+        if: failure()
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -u ${{ secrets.JIRA_USER }}:${{ secrets.JIRA_API_TOKEN }} \
+            --data '{
+              "update": {
+                "comment": [
+                  {
+                    "add": {
+                      "body": "❌ Deployment FAILED for issue JIRA-2. Commit: '${{ github.sha }}'"
+                    }
+                  }
+                ]
+              }
+            }' \
+            https://clintonbitcoin.atlassian.net/rest/api/2/issue/JIRA-2
