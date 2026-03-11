@@ -2,7 +2,7 @@ name: Build, Test, and Deploy
 
 on:
   push:
-    branches: [ "main", "feature/*" ] # Run tests on these branches
+    branches: [ "master", "feature/*" ] # Run tests on these branches
     tags:
       - "v*"                         # Only tags trigger Build/Deploy
 
